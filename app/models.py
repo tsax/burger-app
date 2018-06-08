@@ -7,6 +7,8 @@ class Burger(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
+    has_bun = db.Column(db.Boolean(create_constraint=True))
+    has_patty = db.Column(db.Boolean(create_constraint=True))
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(
         db.DateTime, default=db.func.current_timestamp(),
