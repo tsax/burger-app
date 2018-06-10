@@ -46,4 +46,51 @@ def create_app(config_name):
             response = jsonify(results)
             response.status_code = 200
             return response
+
+    @app.route('/burgers/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+    def burger_manipulation(id, **kwargs):
+        # retrieve a burger using its ID
+        burger = Burger.query.filter_by(id=id).first()
+        if not burger:
+            # Raise an HTTPException with a 404 not found status code
+            abort(404)
+
+        if request.method == 'DELETE':
+            burger.delete()
+            return {
+                "message": "burger {} deleted successfully".format(burger.id)
+            }, 200
+
+        elif request.method == 'PUT':
+            name = str(request.data.get('name', ''))
+            burger.name = name
+            burger.save()
+            response = jsonify({
+                'id': burger.id,
+                'name': burger.name,
+                'date_created': burger.date_created,
+                'date_modified': burger.date_modified
+                })
+            response.status_code = 200
+            return response
+        else:
+            # GET
+            response = jsonify({
+                'id': burger.id,
+                'name': burger.name,
+                'date_created': burger.date_created,
+                'date_modified': burger.date_modified
+                })
+            response.status_code = 200
+            return response
     return app
+
+
+
+
+
+
+
+
+
+

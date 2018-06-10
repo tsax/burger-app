@@ -10,7 +10,7 @@ class BurgerAppTestCase(unittest.TestCase):
         """Define test variables and initialize app."""
         self.app = create_app(config_name="testing")
         self.client = self.app.test_client
-        self.burger = {'name', 'mc_gyver'}
+        self.burger = {'name': 'mc_gyver'}
 
         # binds the app to the current context
         with self.app.app_context():
@@ -19,9 +19,53 @@ class BurgerAppTestCase(unittest.TestCase):
     def test_burger_creation(self):
         """Test API can create a burger (POST request)"""
         res = self.client().post('/burgers/', data=self.burger)
-        print("HAHAHAHA")
         self.assertEqual(res.status_code, 201)
         self.assertIn('mc_gyver', str(res.data))
+
+    def test_api_can_get_all_burgers(self):
+        """Test API can get a burger (GET request)."""
+        res = self.client().post('/burgers/', data=self.burger)
+        self.assertEqual(res.status_code, 201)
+        res = self.client().get('/burgers/')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('mc_gyver', str(res.data))
+
+    def test_api_can_get_burger_by_id(self):
+        """Test API can get a single burger by using its id"""
+        rv = self.client().post('/burgers/', data=self.burger)
+        self.assertEqual(rv.status_code, 201)
+        result_in_json = json.loads(rv.data.decode('utf-8').replace("'", "\""))
+        result = self.client().get(
+            '/burgers/{}'.format(result_in_json['id']))
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('mc_gyver', str(result.data))
+
+    def test_burger_can_be_edited(self):
+        """Test API can edit an existing burger. (PUT request)"""
+        rv = self.client().post(
+            '/burgers/',
+            data={'name': 'mc_gyver'})
+        self.assertEqual(rv.status_code, 201)
+        rv = self.client().put(
+            '/burgers/1',
+            data={
+                'name': 'shake_shack'
+            })
+        self.assertEqual(rv.status_code, 200)
+        results = self.client().get('/burgers/1')
+        self.assertIn('shake_shack', str(results.data))
+
+    def test_burger_deletion(self):
+        """Test API can delete an existing burger. (DELETE request)."""
+        rv = self.client().post(
+            '/burgers/',
+            data={'name': 'shake_shack'})
+        self.assertEqual(rv.status_code, 201)
+        res = self.client().delete('/burgers/1')
+        self.assertEqual(res.status_code, 200)
+        # Test to see if it exists, should return a 404
+        result = self.client().get('/burgers/1')
+        self.assertEqual(result.status_code, 404)
 
     def tearDown(self):
         """teardown all initialized variables"""
