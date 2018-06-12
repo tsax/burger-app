@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from instance.config import app_config
 
 db = SQLAlchemy()
+truth_values = ['True', 'true', 't', '']
 
 def create_app(config_name):
     from app.models import Burger
@@ -18,10 +19,12 @@ def create_app(config_name):
     @app.route('/burgers/', methods=['POST'])
     def create():
         name = str(request.data.get('name', ''))
+        has_bun = str(request.data.get('has_bun', '')) in truth_values
+        has_patty = str(request.data.get('has_patty', '')) in truth_values
         if name:
             burger = Burger(name=name)
-            burger.has_bun = True
-            burger.has_patty = True
+            burger.has_bun = has_bun
+            burger.has_patty = has_patty
             burger.save()
             response = jsonify({
                 'id': burger.id,

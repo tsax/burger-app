@@ -2,6 +2,7 @@ import unittest
 import os
 import json
 from app import create_app, db
+from app.models import Burger
 
 class BurgerAppTestCase(unittest.TestCase):
     """This class represents the burgerapp test case"""
@@ -24,8 +25,8 @@ class BurgerAppTestCase(unittest.TestCase):
 
     def test_api_can_get_all_burgers(self):
         """Test API can get a burger (GET request)."""
-        res = self.client().post('/burgers/', data=self.burger)
-        self.assertEqual(res.status_code, 201)
+        with self.app.app_context():
+            Burger(name=self.burger['name']).save()
         res = self.client().get('/burgers/')
         self.assertEqual(res.status_code, 200)
         self.assertIn('mc_gyver', str(res.data))

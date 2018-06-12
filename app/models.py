@@ -15,7 +15,6 @@ class Burger(db.Model):
         onupdate=db.func.current_timestamp())
 
     def __init__(self, name):
-        """Initialize with name."""
         self.name = name
 
     def save(self):
