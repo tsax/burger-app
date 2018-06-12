@@ -26,14 +26,7 @@ def create_app(config_name):
             burger.has_bun = has_bun
             burger.has_patty = has_patty
             burger.save()
-            response = jsonify({
-                'id': burger.id,
-                'name': burger.name,
-                'has_bun': burger.has_bun,
-                'has_patty': burger.has_patty,
-                'date_created': burger.date_created,
-                'date_modified': burger.date_modified
-            })
+            response = __response(burger)
             response.status_code = 201
             return response
 
@@ -75,19 +68,17 @@ def create_app(config_name):
             name = str(request.data.get('name', ''))
             burger.name = name
             burger.save()
-            response = jsonify({
-                'id': burger.id,
-                'name': burger.name,
-                'has_bun': burger.has_bun,
-                'has_patty': burger.has_patty,
-                'date_created': burger.date_created,
-                'date_modified': burger.date_modified
-                })
+            response = __response(burger)
             response.status_code = 200
             return response
         else:
             # GET
-            response = jsonify({
+            response = __response(burger)
+            response.status_code = 200
+            return response
+
+    def __response(burger):
+        return jsonify({
                 'id': burger.id,
                 'name': burger.name,
                 'has_bun': burger.has_bun,
@@ -95,6 +86,4 @@ def create_app(config_name):
                 'date_created': burger.date_created,
                 'date_modified': burger.date_modified
                 })
-            response.status_code = 200
-            return response
     return app
