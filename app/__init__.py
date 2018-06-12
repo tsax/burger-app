@@ -15,37 +15,44 @@ def create_app(config_name):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
-    @app.route('/burgers/', methods=['POST', 'GET'])
-    def burgers():
-        if request.method == 'POST':
-            name = str(request.data.get('name', ''))
-            if name:
-                burger = Burger(name=name)
-                burger.save()
-                response = jsonify({
-                    'id': burger.id,
-                    'name': burger.name,
-                    'date_created': burger.date_created,
-                    'date_modified': burger.date_modified
-                })
-                response.status_code = 201
-                return response
-        else:
-            # GET
-            burgers = Burger.get_all()
-            results = []
-
-            for burger in burgers:
-                obj = {
-                    'id': burger.id,
-                    'name': burger.name,
-                    'date_created': burger.date_created,
-                    'date_modified': burger.date_modified
-                }
-                results.append(obj)
-            response = jsonify(results)
-            response.status_code = 200
+    @app.route('/burgers/', methods=['POST'])
+    def create():
+        name = str(request.data.get('name', ''))
+        if name:
+            burger = Burger(name=name)
+            burger.has_bun = True
+            burger.has_patty = True
+            burger.save()
+            response = jsonify({
+                'id': burger.id,
+                'name': burger.name,
+                'has_bun': burger.has_bun,
+                'has_patty': burger.has_patty,
+                'date_created': burger.date_created,
+                'date_modified': burger.date_modified
+            })
+            response.status_code = 201
             return response
+
+    @app.route('/burgers/', methods=['GET'])
+    def index():
+        # GET
+        burgers = Burger.get_all()
+        results = []
+
+        for burger in burgers:
+            obj = {
+                'id': burger.id,
+                'name': burger.name,
+                'has_bun': burger.has_bun,
+                'has_patty': burger.has_patty,
+                'date_created': burger.date_created,
+                'date_modified': burger.date_modified
+            }
+            results.append(obj)
+        response = jsonify(results)
+        response.status_code = 200
+        return response
 
     @app.route('/burgers/<int:id>', methods=['GET', 'PUT', 'DELETE'])
     def burger_manipulation(id, **kwargs):
@@ -68,6 +75,8 @@ def create_app(config_name):
             response = jsonify({
                 'id': burger.id,
                 'name': burger.name,
+                'has_bun': burger.has_bun,
+                'has_patty': burger.has_patty,
                 'date_created': burger.date_created,
                 'date_modified': burger.date_modified
                 })
@@ -78,6 +87,8 @@ def create_app(config_name):
             response = jsonify({
                 'id': burger.id,
                 'name': burger.name,
+                'has_bun': burger.has_bun,
+                'has_patty': burger.has_patty,
                 'date_created': burger.date_created,
                 'date_modified': burger.date_modified
                 })
