@@ -8,7 +8,7 @@ db = SQLAlchemy()
 truth_values = ['True', 'true', 't', '']
 
 def create_app(config_name):
-    from app.models import Burger
+    from app.models import Burger, Topping
 
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
@@ -25,6 +25,9 @@ def create_app(config_name):
             burger = Burger(name=name)
             burger.has_bun = has_bun
             burger.has_patty = has_patty
+            for topping in request.data.get('toppings', ''):
+                t = Topping(name=topping)
+                burger.toppings.append(t)
             burger.save()
             response = __response(burger)
             response.status_code = 201

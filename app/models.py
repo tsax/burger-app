@@ -1,8 +1,13 @@
 from app import db
 from sqlalchemy.sql import expression
 
+topping_burger_join_table = db.Table(
+    'topping_burger_join_table',
+    db.Column('burger_id', db.Integer, db.ForeignKey('burgers.id')),
+    db.Column('topping_id', db.Integer, db.ForeignKey('toppings.id'))
+)
+
 class Burger(db.Model):
-    """This class represents the burgers table."""
 
     __tablename__ = 'burgers'
 
@@ -10,11 +15,13 @@ class Burger(db.Model):
     name = db.Column(db.String(255), nullable=False)
     has_bun = db.Column(db.Boolean(create_constraint=True), server_default=expression.true())
     has_patty = db.Column(db.Boolean(create_constraint=True), server_default=expression.true())
+
+    toppings = db.relationship('Topping', secondary=topping_burger_join_table)
+
     date_created = db.Column(db.DateTime, default=db.func.current_timestamp())
     date_modified = db.Column(
         db.DateTime, default=db.func.current_timestamp(),
         onupdate=db.func.current_timestamp())
-    toppings = db.relationship('Topping', backref='burger', lazy=True)
 
     def __init__(self, name):
         self.name = name
@@ -41,4 +48,6 @@ class Topping(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
-    burger_id = db.Column(db.Integer, db.ForeignKey('burgers.id'), nullable=False)
+
+    def __repr__(self):
+        return "<Topping: {}>".format(self.name)
