@@ -86,6 +86,9 @@ def create_app(config_name):
                 'name': burger.name,
                 'has_bun': burger.has_bun,
                 'has_patty': burger.has_patty,
+                'toppings': [{'name': topping.name,
+                              'id': topping.id,
+                              'burger_id': burger.id} for topping in burger.toppings],
                 'date_created': burger.date_created,
                 'date_modified': burger.date_modified
                 })
