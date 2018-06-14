@@ -29,10 +29,10 @@ def create_app(config_name):
             burger.has_patty = has_patty
 
             for topping_name in request.data.get('toppings', ''):
-                topping = Topping.query.filter_by(name=topping_name).first() \
-                            or Topping(name=topping_name)
+                topping = Topping.query.filter_by(name=topping_name).first()
 
-                burger.toppings.append(topping)
+                if topping:
+                    burger.toppings.append(topping)
 
             burger.save()
 
@@ -86,10 +86,10 @@ def create_app(config_name):
             burger.toppings = []
 
             for topping_name in request.data.get('toppings', ''):
-                topping = Topping.query.filter_by(name=topping_name).first() \
-                            or Topping(name=topping_name)
+                topping = Topping.query.filter_by(name=topping_name).first()
 
-                burger.toppings.append(topping)
+                if topping:
+                    burger.toppings.append(topping)
 
         burger.save()
 
