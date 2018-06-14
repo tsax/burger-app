@@ -7,10 +7,10 @@
 
 QUICK!
 
-Create your burgers today!
-Choose your own toppings from our vast selection!
-Forgot something? Fear not, you can update your burger!
-Don't like your burger? No problem. DELETE IT!
+1. Create your burgers today!
+2. Choose your own toppings from our vast selection!
+3. Forgot something? Fear not, you can update your burger!
+4. Don't like your burger? No problem. DELETE IT!
 
 
 All this and more...on our New and Improved.... BURGER APP!
