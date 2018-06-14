@@ -44,19 +44,18 @@ class BurgerAppTestCase(unittest.TestCase):
     #     self.assertEqual(result.status_code, 200)
     #     self.assertIn('mc_gyver', str(result.data))
 
-    # def test_burger_can_be_edited(self):
-    #     rv = self.client().post(
-    #         '/burgers/',
-    #         data={'name': 'mc_gyver'})
-    #     self.assertEqual(rv.status_code, 201)
-    #     rv = self.client().put(
-    #         '/burgers/1',
-    #         data={
-    #             'name': 'shake_shack'
-    #         })
-    #     self.assertEqual(rv.status_code, 200)
-    #     results = self.client().get('/burgers/1')
-    #     self.assertIn('shake_shack', str(results.data))
+    def test_burger_can_be_edited(self):
+        rv = self.client().post('/burgers/', data=self.burger)
+        self.assertEqual(rv.status_code, 201)
+
+        rv = self.client().put('/burgers/1', data={
+                        'name': 'shake_shack'
+                        })
+        self.assertEqual(rv.status_code, 200)
+
+        with self.app.app_context():
+            burger = Burger.query.filter_by(name='shake_shack').first()
+            self.assertEqual('shake_shack', burger.name)
 
     def test_burger_deletion(self):
         rv = self.client().post(
