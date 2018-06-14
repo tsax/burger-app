@@ -21,6 +21,7 @@ def create_app(config_name):
         name = str(request.data.get('name', ''))
         has_bun = str(request.data.get('has_bun', '')) in truth_values
         has_patty = str(request.data.get('has_patty', '')) in truth_values
+
         if name:
             burger = Burger(name=name)
             burger.has_bun = has_bun
@@ -28,9 +29,12 @@ def create_app(config_name):
             for topping in request.data.get('toppings', ''):
                 t = Topping(name=topping)
                 burger.toppings.append(t)
+
             burger.save()
-            response = __response(burger)
+
+            response = jsonify(__serialize(burger))
             response.status_code = 201
+
             return response
 
     @app.route('/burgers/', methods=['GET'])
@@ -40,48 +44,34 @@ def create_app(config_name):
         results = []
 
         for burger in burgers:
-            obj = {
-                'id': burger.id,
-                'name': burger.name,
-                'has_bun': burger.has_bun,
-                'has_patty': burger.has_patty,
-                'toppings': [{'name': topping.name,
-                              'id': topping.id,
-                              'burger_id': burger.id} for topping in burger.toppings]
-            }
-            results.append(obj)
+            results.append(__serialize(burger))
 
         response = jsonify(results)
         response.status_code = 200
+
         return response
 
     @app.route('/burgers/<topping>', methods=['GET'])
     def find_burgers_by_topping(topping):
         # GET
-        burgers = Burger.query.join(Topping, Burger.toppings).filter(Topping.name == topping).all()
+        burgers = Burger.query.join(Topping, Burger.toppings).filter(
+            Topping.name == topping).all()
 
         results = []
 
         for burger in burgers:
-            obj = {
-                'id': burger.id,
-                'name': burger.name,
-                'has_bun': burger.has_bun,
-                'has_patty': burger.has_patty,
-                'toppings': [{'name': topping.name,
-                              'id': topping.id,
-                              'burger_id': burger.id} for topping in burger.toppings]
-            }
-            results.append(obj)
+            results.append(__serialize(burger))
 
         response = jsonify(results)
         response.status_code = 200
+
         return response
 
-    @app.route('/burgers/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+    @app.route('/burgers/<int:id>', methods=['PUT', 'DELETE'])
     def burger_manipulation(id, **kwargs):
         # retrieve a burger using its ID
         burger = Burger.query.filter_by(id=id).first()
+        print("arguments = {}".format(kwargs))
         if not burger:
             # Raise an HTTPException with a 404 not found status code
             abort(404)
@@ -96,17 +86,12 @@ def create_app(config_name):
             name = str(request.data.get('name', ''))
             burger.name = name
             burger.save()
-            response = __response(burger)
-            response.status_code = 200
-            return response
-        else:
-            # GET
-            response = __response(burger)
+            response = jsonify(__serialize(burger))
             response.status_code = 200
             return response
 
-    def __response(burger):
-        return jsonify({
+    def __serialize(burger):
+        return {
                 'id': burger.id,
                 'name': burger.name,
                 'has_bun': burger.has_bun,
@@ -114,5 +99,5 @@ def create_app(config_name):
                 'toppings': [{'name': topping.name,
                               'id': topping.id,
                               'burger_id': burger.id} for topping in burger.toppings]
-                })
+                }
     return app

@@ -18,13 +18,11 @@ class BurgerAppTestCase(unittest.TestCase):
             db.create_all()
 
     def test_burger_creation(self):
-        """Test API can create a burger (POST request)"""
         res = self.client().post('/burgers/', data=self.burger)
         self.assertEqual(res.status_code, 201)
         self.assertIn('mc_gyver', str(res.data))
 
     def test_api_can_get_all_burgers(self):
-        """Test API can get a burger (GET request)."""
         with self.app.app_context():
             Burger(name=self.burger['name']).save()
         res = self.client().get('/burgers/')
