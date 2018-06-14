@@ -26,9 +26,12 @@ def create_app(config_name):
             burger = Burger(name=name)
             burger.has_bun = has_bun
             burger.has_patty = has_patty
-            for topping in request.data.get('toppings', ''):
-                t = Topping(name=topping)
-                burger.toppings.append(t)
+
+            for topping_name in request.data.get('toppings', ''):
+                topping = Topping.query.filter_by(name=topping_name).first() \
+                            or Topping(name=topping_name)
+
+                burger.toppings.append(topping)
 
             burger.save()
 
@@ -41,10 +44,7 @@ def create_app(config_name):
     def index():
         burgers = Burger.get_all()
 
-        results = []
-
-        for burger in burgers:
-            results.append(__serialize(burger))
+        results = [__serialize(burger) for burger in burgers]
 
         response = jsonify(results)
         response.status_code = 200
@@ -57,10 +57,7 @@ def create_app(config_name):
         burgers = Burger.query.join(Topping, Burger.toppings).filter(
             Topping.name == topping).all()
 
-        results = []
-
-        for burger in burgers:
-            results.append(__serialize(burger))
+        results = [__serialize(burger) for burger in burgers]
 
         response = jsonify(results)
         response.status_code = 200
