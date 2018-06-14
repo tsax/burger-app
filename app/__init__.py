@@ -35,8 +35,8 @@ def create_app(config_name):
 
     @app.route('/burgers/', methods=['GET'])
     def index():
-        # GET
         burgers = Burger.get_all()
+
         results = []
 
         for burger in burgers:
@@ -45,10 +45,35 @@ def create_app(config_name):
                 'name': burger.name,
                 'has_bun': burger.has_bun,
                 'has_patty': burger.has_patty,
-                'date_created': burger.date_created,
-                'date_modified': burger.date_modified
+                'toppings': [{'name': topping.name,
+                              'id': topping.id,
+                              'burger_id': burger.id} for topping in burger.toppings]
             }
             results.append(obj)
+
+        response = jsonify(results)
+        response.status_code = 200
+        return response
+
+    @app.route('/burgers/<topping>', methods=['GET'])
+    def find_burgers_by_topping(topping):
+        # GET
+        burgers = Burger.query.join(Topping, Burger.toppings).filter(Topping.name == topping).all()
+
+        results = []
+
+        for burger in burgers:
+            obj = {
+                'id': burger.id,
+                'name': burger.name,
+                'has_bun': burger.has_bun,
+                'has_patty': burger.has_patty,
+                'toppings': [{'name': topping.name,
+                              'id': topping.id,
+                              'burger_id': burger.id} for topping in burger.toppings]
+            }
+            results.append(obj)
+
         response = jsonify(results)
         response.status_code = 200
         return response
@@ -88,8 +113,6 @@ def create_app(config_name):
                 'has_patty': burger.has_patty,
                 'toppings': [{'name': topping.name,
                               'id': topping.id,
-                              'burger_id': burger.id} for topping in burger.toppings],
-                'date_created': burger.date_created,
-                'date_modified': burger.date_modified
+                              'burger_id': burger.id} for topping in burger.toppings]
                 })
     return app
