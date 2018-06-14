@@ -1,8 +1,9 @@
-from flask import request, jsonify, abort
+from flask import request, jsonify
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 
 from instance.config import app_config
+from app.invalid_usage import *
 
 db = SQLAlchemy()
 truth_values = ['True', 'true', 't', '']
@@ -53,7 +54,6 @@ def create_app(config_name):
 
     @app.route('/burgers/<topping>', methods=['GET'])
     def find_burgers_by_topping(topping):
-        # GET
         burgers = Burger.query.join(Topping, Burger.toppings).filter(
             Topping.name == topping).all()
 
@@ -64,28 +64,56 @@ def create_app(config_name):
 
         return response
 
-    @app.route('/burgers/<int:id>', methods=['PUT', 'DELETE'])
-    def burger_manipulation(id, **kwargs):
-        # retrieve a burger using its ID
+    @app.route('/burgers/<int:id>', methods=['PUT'])
+    def update(id, **kwargs):
         burger = Burger.query.filter_by(id=id).first()
-        print("arguments = {}".format(kwargs))
+
         if not burger:
-            # Raise an HTTPException with a 404 not found status code
-            abort(404)
+            raise InvalidUsage('Burger not found', status_code=404)
 
-        if request.method == 'DELETE':
-            burger.delete()
-            return {
-                "message": "burger {} deleted successfully".format(burger.id)
-            }, 200
+        name = str(request.data.get('name', ''))
+        has_bun = str(request.data.get('has_bun', ''))
+        has_patty = str(request.data.get('has_patty', ''))
+        topping_names = request.data.get('toppings', '')
 
-        elif request.method == 'PUT':
-            name = str(request.data.get('name', ''))
+        if name:
             burger.name = name
-            burger.save()
-            response = jsonify(__serialize(burger))
-            response.status_code = 200
-            return response
+        if has_bun:
+            burger.has_bun = has_bun in truth_values
+        if has_patty:
+            burger.has_patty = has_patty in truth_values
+        if topping_names:
+            burger.toppings = []
+
+            for topping_name in request.data.get('toppings', ''):
+                topping = Topping.query.filter_by(name=topping_name).first() \
+                            or Topping(name=topping_name)
+
+                burger.toppings.append(topping)
+
+        burger.save()
+
+        response = jsonify(__serialize(burger))
+        response.status_code = 200
+
+        return response
+
+    @app.route('/burgers/<int:id>', methods=['DELETE'])
+    def delete(id):
+        burger = Burger.query.filter_by(id=id).first()
+
+        if not burger:
+            raise InvalidUsage('Burger not found', status_code=404)
+
+        burger.delete()
+
+        return jsonify({}), 204
+
+    @app.errorhandler(InvalidUsage)
+    def handle_invalid_usage(error):
+        response = jsonify(error.to_dict())
+        response.status_code = error.status_code
+        return response
 
     def __serialize(burger):
         return {
